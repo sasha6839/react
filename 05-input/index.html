@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Список завдань</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <h1>Список завдань</h1>
+      <p>Плануй завдання та фокусуйся на навчанні.</p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Додати завдання</h2>
+        <p class="live-preview">Ти друкуєш: <span id="preview-text">...</span></p>
+
+        <form id="task-form">
+          <input
+            type="text"
+            id="task-input"
+            placeholder="Що потрібно зробити"
+            autocomplete="off">
+          <input
+            type="number"
+            id="minutes-input"
+            placeholder="Хвилини"
+            min="0"
+            max="60">
+
+          <button type="submit" id="submit-btn">Додати</button>
+        </form>
+
+        <ul id="task-list" class="task-list">
+        </ul>
+      </section>
+
+    </main>
+
+    <div id="toast" class="toast hidden">Завдання додано</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
