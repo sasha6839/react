@@ -1,11 +1,8 @@
 import { useState } from 'react'
 
 function setColor(color) {
-    if(color > 3) 
-        { color = 1 } 
-        elif(color === 1){setColor1('red')} 
-        elif(color === 2){setColor2('yellow')} 
-        elif(color === 3){setColor3('green')}
+
+}
 
 function Lights() {
     let color = 0
