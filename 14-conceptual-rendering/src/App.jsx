@@ -1,5 +1,5 @@
 import React from 'react'
-import {BrowserRouter as Router, Route, Routes, Link} from 'react-router-dom'
+import {BrowserRouter, Route, Routes, Link} from 'react-router-dom'
 import './App.css'
 import RegistrationPage from './pages/RegistrationPage.jsx'
 import TodoListPage from './pages/TodoListPage.jsx'
@@ -19,13 +19,13 @@ const HomePage = () => (
 function App() {
 
   return (
-      <Router>
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/registration" element={<RegistrationPage />} />
           <Route path="/todo" element={<TodoListPage />} />
         </Routes>
-      </Router>
+      </BrowserRouter>
   )
 };
 
