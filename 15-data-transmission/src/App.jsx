@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import './App.css'
 import BookCard from './components/BookCard.jsx'
+import HeroCard from './components/HeroCard.jsx';
 
 function App() {
   const [heroes] = useState([
@@ -26,14 +27,36 @@ function App() {
 
   function addBookToFavorites(book){
     setFavorites(prev => {
-      const exists = prev.some(it => it.book==="book" && it.id===book.id);
-      
+      const exists = prev.some(it => it.type==="Book" && it.id===book.id);
+      console.log('B', prev)
       return exists ? prev : [
         ...prev,
         {type:'Book', id: book.id, label: `${book.title} - ${book.author}`}
       ]
     })
   }
+
+  // HEROES
+
+  function sayHello(name) {
+    alert(`Привіт, я ${name}`)
+  }
+
+  function addHeroToFavorites(hero) {
+    setFavorites(prev => {
+      const exists = prev.some(it => it.type==="Hero" && it.id===hero.id);
+      console.log('H', prev)
+      return exists ? prev : [
+        ...prev,
+        {type:'Hero', id: hero.id, label: `${hero.name} - ${hero.power}`}
+      ]
+    })
+  }
+
+  const favoriteHeroIds = useMemo(
+    () => new Set(favorites.filter(f => f.type === "Hero").map(f => f.id)),
+    [favorites]
+  );
   
   return (
     <div>
@@ -52,6 +75,30 @@ function App() {
           ))}
         </div>
       </section>
+
+      <section>
+        <h2>Герої</h2>
+        <div className='grid'>
+          {heroes.map(h =>(
+            <HeroCard
+              key={h.id}
+              name={h.name}
+              power={h.power}
+              level={h.skills}
+              image={h.image}
+              skills={h.skills}
+              info={h.info}
+
+              onHello={()=> sayHello(h.name)}
+              onAdd={()=> addHeroToFavorites(h)}
+              isAdded={favoriteHeroIds.has(h.id)}
+            >
+
+            </HeroCard>
+          ))}
+        </div>
+      </section>
+
     </div>
   )
 }
