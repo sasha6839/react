@@ -5,6 +5,14 @@ export default function FavoritesList({
     ariaLabel = 'Список обраного'
 }){
 
+    if(!items?.length){
+        return(
+            <p className="empty">
+                {hasFavorites ? 'Змініть фільтри' : "Нічого не знайдено"}
+            </p>
+        )
+    }
+
     return (
         <ul className="list" aria-label={ariaLabel}>
             {items.map((item)=>{
@@ -14,9 +22,16 @@ export default function FavoritesList({
                     style={{justifyContent: 'space-between'}}
                 >
                     <div>
-
+                        <span className="tag">{item.type}</span>
+                        {item.label}
                     </div>
-                    <button>
+                    <button
+                        type="button"
+                        className="button remove"
+                        onClick={()=> onRemove(item)}
+                        title="Видалити"
+                        aria-label={`Видалити ${item.label} з обраного`}
+                    >
                         X
                     </button>
                 </li>

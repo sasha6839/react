@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react'
 import './App.css'
 import BookCard from './components/BookCard.jsx'
 import HeroCard from './components/HeroCard.jsx';
+import FilterBar from './components/FilterBar.jsx';
+import FavoritesList from './components/FavoritesList.jsx';
 
 function App() {
   const [heroes] = useState([
@@ -57,7 +59,23 @@ function App() {
     () => new Set(favorites.filter(f => f.type === "Hero").map(f => f.id)),
     [favorites]
   );
-  
+
+  const total = favorites.length;
+  const bookCount = favorites.filter(i => i.type === "Book").length;
+  const heroCount = favorites.filter(i => i.type === "Hero").length;
+
+  const filteredFavorites = useMemo(() => {
+    let items = favorites;
+    if(filter === 'hero') items = items.filter(i => i.type === 'Hero');
+    if(filter === 'book') items = items.filter(i => i.type === 'Book');
+    return items
+  }, [favorites, filter]);
+    
+
+  function removeFromFavorites(item) {
+    setFavorites(prev => prev.filter(it => !(it.type === item.type && it.id === item.id)));
+  }
+
   return (
     <div>
       <section>
@@ -99,6 +117,24 @@ function App() {
         </div>
       </section>
 
+      <section>
+        <h2>Фільтри</h2>
+        <FilterBar 
+          filter={filter}
+          setFilter={setFilter}
+          heroCount={heroCount}
+          bookCount={bookCount}
+          total={total}
+          query={query}
+          setQuery={setQuery}
+        />
+        <FavoritesList 
+          items={filteredFavorites}
+          onRemove={setFavorites}
+          hasFavorites={favorites.length > 0}
+          ariaLabel="Список обраного"
+        />
+      </section>
     </div>
   )
 }
