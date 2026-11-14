@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="uk" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Урок: Робота з масивами об'єктів у React. Вступ до маршрутизації</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    details > summary {
+      list-style: none;
+    }
+    details > summary::-webkit-details-marker {
+      display: none;
+    }
+    details[open] .chevron-icon {
+      transform: rotate(180deg);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+  <!-- Верхня навігаційна панель -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 block">Практикум React</span>
+          <span class="text-sm font-bold text-slate-900 hidden sm:inline">Масиви об'єктів, localStorage та Router</span>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium overflow-x-auto">
+        <a href="#section-data" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap">1. Вихідні дані</a>
+        <a href="#section-tasks" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap">Завдання (1–5)</a>
+        <a href="#section-extra" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap">Додаткові</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Головний банер уроку -->
+  <section class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-12 sm:py-16 border-b border-slate-800">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-medium mb-4">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        Урок • Практичне заняття
+      </div>
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4">
+        Робота з масивами об'єктів у React.<br class="hidden sm:inline" />
+        <span class="text-indigo-300">Стан, localStorage та вступ до маршрутизації</span>
+      </h1>
+      <p class="text-slate-300 text-base sm:text-lg max-w-3xl leading-relaxed mb-8">
+        Практична робота присвячена імутабельній обробці колекцій даних (<code class="text-indigo-200 bg-white/10 px-1.5 py-0.5 rounded font-mono text-sm">.map()</code>, <code class="text-indigo-200 bg-white/10 px-1.5 py-0.5 rounded font-mono text-sm">.filter()</code>, <code class="text-indigo-200 bg-white/10 px-1.5 py-0.5 rounded font-mono text-sm">.sort()</code>), збереженню стану в <code class="text-indigo-200 bg-white/10 px-1.5 py-0.5 rounded font-mono text-sm">localStorage</code> та побудові SPA-навігації за допомогою <code class="text-indigo-200 bg-white/10 px-1.5 py-0.5 rounded font-mono text-sm">react-router-dom</code>.
+      </p>
+
+      <!-- Команда встановлення -->
+      <div class="bg-slate-950/80 border border-slate-700/80 rounded-xl p-4 max-w-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-1">Крок 0 • Встановіть бібліотеку маршрутизації у терміналі</span>
+          <code id="cmd-install" class="font-mono text-sm text-emerald-400">npm install react-router-dom</code>
+        </div>
+        <button onclick="copyCode('cmd-install', this)" class="self-start sm:self-center inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-600 transition">
+          <span>Копіювати</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-16">
+
+    <!-- ========================================================= -->
+    <!-- БЛОК 1: ВИХІДНІ ДАНІ -->
+    <!-- ========================================================= -->
+    <section id="section-data" class="scroll-mt-24">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold text-sm">1</span>
+          <h2 class="text-2xl font-bold text-slate-900">Вихідні дані</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleAllDetails(true)" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition">Розгорнути все</button>
+          <button onclick="toggleAllDetails(false)" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition">Згорнути все</button>
+        </div>
+      </div>
+      <p class="text-slate-600 mb-6">
+        Розгорніть блоки нижче та скопіюйте готові дані й допоміжні файли у свій проєкт, щоб не витрачати час на написання CSS-стилів та тестових масивів і зосередитися на логіці React.
+      </p>
+
+      <div class="space-y-4">
+        <!-- Блок 1.2: Початковий масив об'єктів -->
+        <details class="data-details group bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <summary class="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50 transition select-none">
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-800 font-mono text-xs font-semibold">Дані JS</span>
+              <span class="font-semibold text-slate-900">Початковий масив користувачів <code class="font-mono text-indigo-600 text-sm">initialUsers</code></span>
+            </div>
+            <svg class="chevron-icon w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 pt-2 border-t border-slate-100">
+            <p class="text-sm text-slate-600 mb-3">
+              Використовуйте цей масив у всіх компонентах завдань (виносьте його за межі функції компонента):
+            </p>
+            <div class="relative">
+              <button onclick="copyCode('data-users', this)" class="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-600 transition">Копіювати</button>
+              <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-xs sm:text-sm overflow-x-auto leading-relaxed"><code id="data-users">const initialUsers = [
+  { id: 1, name: 'Олег', age: 25 },
+  { id: 2, name: 'Анна', age: 30 },
+  { id: 3, name: 'Іван', age: 28 },
+];</code></pre>
+            </div>
+          </div>
+        </details>
+
+        <!-- Блок 1.3: src/App.css -->
+        <details class="data-details group bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <summary class="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50 transition select-none">
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-0.5 rounded-md bg-sky-100 text-sky-800 font-mono text-xs font-semibold">App.css</span>
+              <span class="font-semibold text-slate-900">Готові CSS-стилі для навігації, списків, інпутів та кнопок</span>
+            </div>
+            <svg class="chevron-icon w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 pt-2 border-t border-slate-100">
+            <p class="text-sm text-slate-600 mb-3">
+              Повністю замініть вміст файлу <code class="font-mono text-indigo-600">App.css</code> цим кодом:
+            </p>
+            <div class="relative">
+              <button onclick="copyCode('data-app-css', this)" class="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-600 transition">Копіювати</button>
+              <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-xs overflow-x-auto max-h-96 leading-relaxed"><code id="data-app-css">/* Загальні стилі для головного контейнера додатка */
+.app-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Стилі для навігаційного меню */
+nav {
+  margin-bottom: 20px;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+nav li {
+  margin: 0;
+}
+
+nav a {
+  display: inline-block;
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+nav a:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+/* Автоматично застосовується компонентом NavLink для активного маршруту */
+nav a.active {
+  background-color: #0056b3;
+  color: #fff;
+}
+
+/* Контейнер окремої секції/компонента */
+.user-list-container {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+}
+
+/* Стилі для заголовків */
+h2 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Стилі для списків користувачів (підтримуємо як .user-list, так і ul всередині контейнера) */
+.user-list,
+.user-list-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-list li,
+.user-list-container li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.user-list li:hover,
+.user-list-container li:hover {
+  background-color: #f0f0f0;
+}
+
+/* Стилі для полів введення (текстових та числових) */
+.user-list-container input[type="text"],
+.user-list-container input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.user-list-container input::placeholder {
+  color: #999;
+}
+
+.user-list-container input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Група кнопок керування (наприклад, для сортування чи фільтрації) */
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* Базові стилі для кнопок */
+button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:active {
+  background-color: #004085;
+}
+
+/* Стилі для кнопки "+1" всередині елемента списку */
+.user-list li button,
+.user-list-container li button {
+  margin-left: 10px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Стилі для кнопки скидання */
+.btn-reset,
+.user-filter button {
+  background-color: #dc3545;
+}
+
+.btn-reset:hover,
+.user-filter button:hover {
+  background-color: #c82333;
+}
+
+.btn-reset:active,
+.user-filter button:active {
+  background-color: #bd2130;
+}
+
+.user-filter button {
+  margin-bottom: 16px;
+}
+
+/* Повідомлення, коли список порожній або сторінку не знайдено */
+.empty-message {
+  text-align: center;
+  color: #666;
+  padding: 16px;
+  font-style: italic;
+}
+
+/* Стилі для сторінки Home */
+.home-page {
+  text-align: center;
+  padding: 20px;
+}
+
+/* Адаптивність для мобільних екранів */
+@media (max-width: 600px) {
+  .app-container {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  nav ul {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .user-list li,
+  .user-list-container li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .user-list li button,
+  .user-list-container li button {
+    align-self: flex-end;
+  }
+
+  .user-list-container input[type="text"],
+  .user-list-container input[type="number"] {
+    font-size: 14px;
+  }
+}</code></pre>
+            </div>
+          </div>
+        </details>
+
+        <!-- Блок 1.4: Home.jsx та main.jsx -->
+        <details class="data-details group bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <summary class="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50 transition select-none">
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-xs font-semibold">Допоміжні файли</span>
+              <span class="font-semibold text-slate-900">Готові <code class="font-mono text-indigo-600 text-sm">Home.jsx</code> та <code class="font-mono text-indigo-600 text-sm">main.jsx</code></span>
+            </div>
+            <svg class="chevron-icon w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 pt-3 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="relative">
+              <div class="text-xs font-mono font-semibold text-slate-600 mb-1.5">Home.jsx</div>
+              <button onclick="copyCode('data-home-jsx', this)" class="absolute top-7 right-2.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs border border-slate-600 transition">Копіювати</button>
+              <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-xs overflow-x-auto leading-relaxed"><code id="data-home-jsx">import React from 'react';
+
+function Home() {
+  return &lt;h2 className="home-page"&gt;Головна сторінка&lt;/h2&gt;;
+}
+
+export default Home;</code></pre>
+            </div>
+            <div class="relative">
+              <div class="text-xs font-mono font-semibold text-slate-600 mb-1.5">main.jsx</div>
+              <button onclick="copyCode('data-main-jsx', this)" class="absolute top-7 right-2.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs border border-slate-600 transition">Копіювати</button>
+              <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-xs overflow-x-auto leading-relaxed"><code id="data-main-jsx">import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import App from './App.jsx';
+
+createRoot(document.getElementById('root')).render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;,
+);</code></pre>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- БЛОК 2: ПРАКТИЧНІ ЗАВДАННЯ (1-5) -->
+    <!-- ========================================================= -->
+    <section id="section-tasks" class="scroll-mt-24">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold text-sm">2</span>
+          <h2 class="text-2xl font-bold text-slate-900">Практичні завдання</h2>
+        </div>
+      </div>
+
+      <div class="space-y-8">
+
+        <!-- ЗАВДАННЯ 1 -->
+        <article class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                  Середній
+                </span>
+                <span class="font-mono text-xs text-slate-500">UserFilter.jsx</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900">Завдання 1: Фільтрація за віком та збереження в localStorage</h3>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-5">
+            <div class="bg-indigo-50/70 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+              <h4 class="font-bold text-indigo-950 text-sm mb-1">Чому це важливо в React і як це працює</h4>
+              <p class="text-slate-700 text-sm leading-relaxed">
+                Дані у <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">useState</code> зберігаються лише до перезавантаження сторінки. Щоб фільтр користувача не зникав після оновлення вкладки, масив серіалізують у JSON-рядок (<code class="font-mono text-xs bg-white px-1 py-0.5 rounded">JSON.stringify</code>) та записують у <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">localStorage</code>, а під час монтування компонента відновлюють у хуку <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">useEffect</code> через <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">JSON.parse</code>.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm mb-2">Покрокове виконання:</h4>
+              <ol class="list-decimal list-inside space-y-2 text-slate-700 text-sm leading-relaxed">
+                <li>Створіть файл <code class="font-mono text-indigo-600">UserFilter.jsx</code> і винесіть на початок файлу масив <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">initialUsers</code> та константу <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">STORAGE_KEY = 'task1_filteredUsers'</code>.</li>
+                <li>У компоненті <code class="font-mono text-indigo-600">UserFilter</code> оголосіть два стани: <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">users</code> (початково <code class="font-mono text-xs">initialUsers</code>) та <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">ageFilter</code> (початково <code class="font-mono text-xs">''</code>).</li>
+                <li>У хуку <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">useEffect(() =&gt; { ... }, [])</code> прочитайте запис за ключем <code class="font-mono text-xs">STORAGE_KEY</code>. Якщо збережений масив валідний і не порожній, передайте його у <code class="font-mono text-xs">setUsers</code>.</li>
+                <li>Створіть обробник <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">handleFilter</code>: обчисліть <code class="font-mono text-xs">minAge = ageFilter === '' ? 0 : Number(ageFilter)</code>, відфільтруйте <code class="font-mono text-xs">initialUsers</code> за умовою <code class="font-mono text-xs">user.age &gt;= minAge</code>, оновіть стан <code class="font-mono text-xs">setUsers(filtered)</code> і збережіть масив у <code class="font-mono text-xs">localStorage</code>.</li>
+                <li>У JSX додайте числовий інпут (<code class="font-mono text-xs">type="number" min="0"</code>), кнопку <code class="font-mono text-xs">Фільтрувати</code> в блоці <code class="font-mono text-xs">.button-group</code> та умовний вивід списку <code class="font-mono text-xs">ul.user-list</code> або повідомлення <code class="font-mono text-xs">p.empty-message</code>.</li>
+                <li>Підключіть <code class="font-mono text-indigo-600">&lt;UserFilter /&gt;</code> у <code class="font-mono text-xs">LessonExamples</code> в <code class="font-mono text-xs">App.jsx</code>.</li>
+              </ol>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Обов'язкові імена змінних, компонентів та ключів</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-700">
+                <div>• Компонент: <span class="text-indigo-600 font-semibold">UserFilter</span></div>
+                <div>• Ключ localStorage: <span class="text-indigo-600 font-semibold">'task1_filteredUsers'</span></div>
+                <div>• Стани: <span class="text-indigo-600 font-semibold">users / setUsers</span>, <span class="text-indigo-600 font-semibold">ageFilter / setAgeFilter</span></div>
+                <div>• Функція-обробник: <span class="text-indigo-600 font-semibold">handleFilter</span></div>
+              </div>
+            </div>
+
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 text-xs sm:text-sm text-amber-950 space-y-1.5">
+              <p class="font-bold">💡 Підказки до складних місць:</p>
+              <ul class="list-disc list-inside space-y-1 text-amber-900">
+                <li>Фільтруйте завжди початковий масив <code class="font-mono text-xs bg-white/80 px-1 rounded">initialUsers</code>, а не поточний стан <code class="font-mono text-xs bg-white/80 px-1 rounded">users</code>, щоб при зменшенні віку в інпуті поверталися раніше відфільтровані користувачі.</li>
+                <li>Огорніть <code class="font-mono text-xs bg-white/80 px-1 rounded">JSON.parse(...)</code> у блок <code class="font-mono text-xs bg-white/80 px-1 rounded">try ... catch</code> на випадок пошкоджених даних у сховищі.</li>
+                <li><strong>Додатковий челендж (<code class="font-mono text-xs">UserFilterImproved.jsx</code>, компонент <code class="font-mono text-xs">UserFilterImproved</code>):</strong> зробіть реактивну версію без кнопки, де у <code class="font-mono text-xs">localStorage</code> (ключ <code class="font-mono text-xs">'task1_ageFilterValue'</code>) зберігається лише рядок <code class="font-mono text-xs">ageFilter</code>, а список обчислюється під час рендеру.</li>
+              </ul>
+            </div>
+
+            <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 text-xs sm:text-sm text-emerald-950">
+              <span class="font-bold">👁️ Очікуваний візуальний результат:</span> секція <code class="font-mono text-xs">.user-list-container</code> із заголовком, числовим полем введення з підказкою <em>«Введіть мінімальний вік»</em>, синьою кнопкою <em>«Фільтрувати»</em> та відфільтрованим списком карток, який не зникає після натискання <kbd class="px-1 py-0.5 text-xs bg-white border rounded">F5</kbd>.
+            </div>
+          </div>
+        </article>
+
+        <!-- ЗАВДАННЯ 2 -->
+        <article class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  Базовий
+                </span>
+                <span class="font-mono text-xs text-slate-500">Task2.jsx</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900">Завдання 2: Сортування за зростанням, спаданням та скидання</h3>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-5">
+            <div class="bg-indigo-50/70 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+              <h4 class="font-bold text-indigo-950 text-sm mb-1">Чому це важливо в React і як це працює</h4>
+              <p class="text-slate-700 text-sm leading-relaxed">
+                Компонент повинен керувати кількома режимами відображення одного набору даних без його втрати. Зберігаючи незмінний масив <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">initialUsers</code> поза компонентом, ми можемо в будь-який момент скинути сортування до початкового порядку елементів.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm mb-2">Покрокове виконання:</h4>
+              <ol class="list-decimal list-inside space-y-2 text-slate-700 text-sm leading-relaxed">
+                <li>Створіть файл <code class="font-mono text-indigo-600">Task2.jsx</code> та оголосіть константу <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">initialUsers</code> перед компонентом <code class="font-mono text-indigo-600">Task2</code>.</li>
+                <li>Створіть стан <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">const [users, setUsers] = useState(initialUsers)</code>.</li>
+                <li>Реалізуйте три обробники подій:
+                  <ul class="list-disc list-inside ml-5 mt-1 space-y-1 text-slate-600">
+                    <li><code class="font-mono text-xs text-slate-800">handleSortAsc</code> — сортує копію масиву від найменшого віку до найбільшого (<code class="font-mono text-xs">a.age - b.age</code>).</li>
+                    <li><code class="font-mono text-xs text-slate-800">handleSortDesc</code> — сортує копію масиву від найбільшого віку до найменшого (<code class="font-mono text-xs">b.age - a.age</code>).</li>
+                    <li><code class="font-mono text-xs text-slate-800">handleReset</code> — встановлює <code class="font-mono text-xs">setUsers(initialUsers)</code>.</li>
+                  </ul>
+                </li>
+                <li>Додайте у <code class="font-mono text-xs">&lt;div className="button-group"&gt;</code> три кнопки: <em>«Сортувати за зростанням»</em>, <em>«Сортувати за спаданням»</em> і <em>«Скинути сортування»</em> (з класом <code class="font-mono text-xs">className="btn-reset"</code>).</li>
+                <li>Виведіть список <code class="font-mono text-xs">ul.user-list</code> та підключіть <code class="font-mono text-indigo-600">&lt;Task2 /&gt;</code> у <code class="font-mono text-xs">LessonExamples</code> (<code class="font-mono text-xs">App.jsx</code>).</li>
+              </ol>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Обов'язкові імена змінних, компонентів та класів</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-700">
+                <div>• Компонент: <span class="text-indigo-600 font-semibold">Task2</span></div>
+                <div>• Стан: <span class="text-indigo-600 font-semibold">users / setUsers</span></div>
+                <div>• Обробники: <span class="text-indigo-600 font-semibold">handleSortAsc, handleSortDesc, handleReset</span></div>
+                <div>• Клас кнопки скидання: <span class="text-indigo-600 font-semibold">btn-reset</span></div>
+              </div>
+            </div>
+
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 text-xs sm:text-sm text-amber-950">
+              <p class="font-bold mb-1">💡 Підказка:</p>
+              <p class="text-amber-900">
+                Перед викликом <code class="font-mono text-xs bg-white/80 px-1 rounded">.sort()</code> обов'язково створюйте новий масив через <code class="font-mono text-xs bg-white/80 px-1 rounded">[...prevUsers]</code>, інакше React не зафіксує зміну посилання та не перемалює список.
+              </p>
+            </div>
+
+            <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 text-xs sm:text-sm text-emerald-950">
+              <span class="font-bold">👁️ Очікуваний візуальний результат:</span> блок із двома синіми кнопками сортування та однією червоною кнопкою <em>«Скинути сортування»</em>, які миттєво перебудовують порядок карток у списку.
+            </div>
+          </div>
+        </article>
+
+        <!-- ЗАВДАННЯ 3 -->
+        <article class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                  Середній
+                </span>
+                <span class="font-mono text-xs text-slate-500">Task3.jsx</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900">Завдання 3: Оновлення віку (+1) зі збереженням та очищенням localStorage</h3>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-5">
+            <div class="bg-indigo-50/70 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+              <h4 class="font-bold text-indigo-950 text-sm mb-1">Чому це важливо в React і як це працює</h4>
+              <p class="text-slate-700 text-sm leading-relaxed">
+                Поєднання <strong>лінивої ініціалізації</strong> (<code class="font-mono text-xs bg-white px-1 py-0.5 rounded">useState(() =&gt; ...)</code>) та побічного ефекту (<code class="font-mono text-xs bg-white px-1 py-0.5 rounded">useEffect</code> із залежністю <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">[users]</code>) дозволяє автоматично зберігати кожну зміну об'єктів масиву у браузерному сховищі без дублювання коду запису.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm mb-2">Покрокове виконання:</h4>
+              <ol class="list-decimal list-inside space-y-2 text-slate-700 text-sm leading-relaxed">
+                <li>Створіть файл <code class="font-mono text-indigo-600">Task3.jsx</code>, оголосіть <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">initialUsers</code> та <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">STORAGE_KEY = 'task3_users'</code>.</li>
+                <li>У компоненті <code class="font-mono text-indigo-600">Task3</code> ініціалізуйте стан <code class="font-mono text-xs">users</code> функцією, яка зчитує та парсить <code class="font-mono text-xs">localStorage.getItem(STORAGE_KEY)</code> (або повертає <code class="font-mono text-xs">initialUsers</code>, якщо запису немає).</li>
+                <li>Додайте <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">useEffect</code> із залежністю <code class="font-mono text-xs">[users]</code>, який записує актуальний масив у <code class="font-mono text-xs">localStorage</code>.</li>
+                <li>Реалізуйте <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">increaseAge(id)</code>, яка імутабельно збільшує поле <code class="font-mono text-xs">age</code> на 1 для обраного користувача.</li>
+                <li>Реалізуйте <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">handleReset()</code>, яка повертає стан до <code class="font-mono text-xs">initialUsers</code> і викликає <code class="font-mono text-xs">localStorage.removeItem(STORAGE_KEY)</code>.</li>
+                <li>Додайте кнопку <code class="font-mono text-xs">+1</code> у кожен <code class="font-mono text-xs">&lt;li&gt;</code> та червону кнопку <code class="font-mono text-xs">Скинути</code> (<code class="font-mono text-xs">className="btn-reset"</code>) під списком. Підключіть <code class="font-mono text-indigo-600">&lt;Task3 /&gt;</code> у <code class="font-mono text-xs">LessonExamples</code>.</li>
+              </ol>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Обов'язкові імена змінних, компонентів та ключів</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-700">
+                <div>• Компонент: <span class="text-indigo-600 font-semibold">Task3</span></div>
+                <div>• Ключ localStorage: <span class="text-indigo-600 font-semibold">'task3_users'</span></div>
+                <div>• Функції: <span class="text-indigo-600 font-semibold">increaseAge(id)</span>, <span class="text-indigo-600 font-semibold">handleReset</span></div>
+                <div>• Кнопка скидання: <span class="text-indigo-600 font-semibold">className="btn-reset"</span></div>
+              </div>
+            </div>
+
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 text-xs sm:text-sm text-amber-950">
+              <p class="font-bold mb-1">💡 Підказка:</p>
+              <p class="text-amber-900">
+                Використовуйте унікальний ключ <code class="font-mono text-xs bg-white/80 px-1 rounded">'task3_users'</code>, щоб цей компонент не перезаписував дані інших завдань у межах одного <code class="font-mono text-xs bg-white/80 px-1 rounded">localhost</code>.
+              </p>
+            </div>
+
+            <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 text-xs sm:text-sm text-emerald-950">
+              <span class="font-bold">👁️ Очікуваний візуальний результат:</span> список із кнопками <code class="font-mono text-xs">+1</code> навпроти кожного користувача та червоною кнопкою <em>«Скинути»</em> знизу. Збільшений вік зберігається після перезавантаження сторінки, а <em>«Скинути»</em> повертає початкові числа (25, 30, 28).
+            </div>
+          </div>
+        </article>
+
+        <!-- ЗАВДАННЯ 4 -->
+        <article class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                  Середній
+                </span>
+                <span class="font-mono text-xs text-slate-500">Users.jsx + App.jsx</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900">Завдання 4: Базовий роутинг із двома сторінками</h3>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-5">
+            <div class="bg-indigo-50/70 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+              <h4 class="font-bold text-indigo-950 text-sm mb-1">Чому це важливо в React і як це працює</h4>
+              <p class="text-slate-700 text-sm leading-relaxed">
+                У Single Page Application (SPA) зміна URL відбувається без перезавантаження HTML-документа з сервера. <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">BrowserRouter</code> відстежує адресу в браузері, <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">NavLink</code> змінює шлях і автоматично додає активному пункту меню клас <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">active</code>, а <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">Routes</code> підбирає відповідний <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">Route</code>.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm mb-2">Покрокове виконання:</h4>
+              <ol class="list-decimal list-inside space-y-2 text-slate-700 text-sm leading-relaxed">
+                <li>Створіть файл <code class="font-mono text-indigo-600">Users.jsx</code> із компонентом <code class="font-mono text-indigo-600">Users</code>, який відображає список користувачів (Олег, Анна, Іван) у контейнері <code class="font-mono text-xs">&lt;div className="user-list-container"&gt;</code> із заголовком <code class="font-mono text-xs">&lt;h2&gt;Список користувачів&lt;/h2&gt;</code>.</li>
+                <li>У файлі <code class="font-mono text-indigo-600">App.jsx</code> імпортуйте компонент <code class="font-mono text-xs">Users</code>.</li>
+                <li>Додайте в навігацію <code class="font-mono text-xs">&lt;nav&gt;&lt;ul&gt;</code> посилання <code class="font-mono text-xs">&lt;li&gt;&lt;NavLink to="/users"&gt;Користувачі&lt;/NavLink&gt;&lt;/li&gt;</code>.</li>
+                <li>У контейнері <code class="font-mono text-xs">&lt;Routes&gt;</code> зареєструйте маршрут <code class="font-mono text-xs">&lt;Route path="/users" element={&lt;Users /&gt;} /&gt;</code>.</li>
+              </ol>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Обов'язкові імена файлів, компонентів та маршрутів</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-700">
+                <div>• Файл і компонент: <span class="text-indigo-600 font-semibold">Users.jsx → Users</span></div>
+                <div>• Маршрут: <span class="text-indigo-600 font-semibold">path="/users"</span></div>
+                <div>• Навігація: <span class="text-indigo-600 font-semibold">&lt;NavLink to="/users"&gt;</span></div>
+                <div>• Заголовок сторінки: <span class="text-indigo-600 font-semibold">Список користувачів</span></div>
+              </div>
+            </div>
+
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 text-xs sm:text-sm text-amber-950">
+              <p class="font-bold mb-1">💡 Підказка:</p>
+              <p class="text-amber-900">
+                Не використовуйте звичайний тег <code class="font-mono text-xs bg-white/80 px-1 rounded">&lt;a href="/users"&gt;</code> — він спричинить повне перезавантаження сторінки та скине стан React. Завжди використовуйте <code class="font-mono text-xs bg-white/80 px-1 rounded">&lt;NavLink&gt;</code> або <code class="font-mono text-xs bg-white/80 px-1 rounded">&lt;Link&gt;</code>.
+              </p>
+            </div>
+
+            <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 text-xs sm:text-sm text-emerald-950">
+              <span class="font-bold">👁️ Очікуваний візуальний результат:</span> миттєве перемикання між сторінками <em>«Головна»</em> (<code class="font-mono text-xs">/</code>) та <em>«Користувачі»</em> (<code class="font-mono text-xs">/users</code>) із підсвічуванням активної кнопки меню темно-синім кольором.
+            </div>
+          </div>
+        </article>
+
+        <!-- ЗАВДАННЯ 5 -->
+        <article class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-200">
+                  Складний
+                </span>
+                <span class="font-mono text-xs text-slate-500">UserList5.jsx + App.jsx</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900">Завдання 5: Маршрутизація + збереження оновленого списку в localStorage</h3>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-5">
+            <div class="bg-indigo-50/70 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+              <h4 class="font-bold text-indigo-950 text-sm mb-1">Чому це важливо в React і як це працює</h4>
+              <p class="text-slate-700 text-sm leading-relaxed">
+                Під час переходу на інший маршрут React демонтує (<code class="font-mono text-xs bg-white px-1 py-0.5 rounded">unmount</code>) поточний компонент сторінки і видаляє його стан із пам'яті. Інтеграція з <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">localStorage</code> дозволяє сторінці <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">/users/task5</code> відновлювати актуальний вік користувачів як при поверненні з іншої сторінки SPA, так і після перезавантаження браузера.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm mb-2">Покрокове виконання:</h4>
+              <ol class="list-decimal list-inside space-y-2 text-slate-700 text-sm leading-relaxed">
+                <li>Створіть файл <code class="font-mono text-indigo-600">UserList5.jsx</code> із компонентом <code class="font-mono text-indigo-600">UserList5</code>.</li>
+                <li>Визначте масив <code class="font-mono text-xs">initialUsers</code> та константу <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">STORAGE_KEY = 'task5_users'</code>.</li>
+                <li>Реалізуйте безпечне завантаження початкового стану <code class="font-mono text-xs">users</code> із <code class="font-mono text-xs">localStorage</code>, автоматичний запис змін через <code class="font-mono text-xs">useEffect</code>, функцію <code class="font-mono text-xs">increaseAge(id)</code> для кнопки <code class="font-mono text-xs">+1</code> та функцію <code class="font-mono text-xs">handleReset()</code> для кнопки <em>«Скинути»</em>.</li>
+                <li>У <code class="font-mono text-indigo-600">App.jsx</code> додайте посилання <code class="font-mono text-xs">&lt;NavLink to="/users/task5"&gt;Завдання 5&lt;/NavLink&gt;</code> та маршрут <code class="font-mono text-xs">&lt;Route path="/users/task5" element={&lt;UserList5 /&gt;} /&gt;</code>.</li>
+              </ol>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Обов'язкові імена файлів, компонентів та маршрутів</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-700">
+                <div>• Файл і компонент: <span class="text-indigo-600 font-semibold">UserList5.jsx → UserList5</span></div>
+                <div>• Ключ сховища: <span class="text-indigo-600 font-semibold">'task5_users'</span></div>
+                <div>• Маршрут: <span class="text-indigo-600 font-semibold">path="/users/task5"</span></div>
+                <div>• Кнопки: <span class="text-indigo-600 font-semibold">+1</span> та <span class="text-indigo-600 font-semibold">button.btn-reset "Скинути"</span></div>
+              </div>
+            </div>
+
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 text-xs sm:text-sm text-amber-950">
+              <p class="font-bold mb-1">💡 Підказка:</p>
+              <p class="text-amber-900">
+                Перевірте коректність шляху: <code class="font-mono text-xs bg-white/80 px-1 rounded">/users/task5</code> має бути зареєстрований як окремий <code class="font-mono text-xs bg-white/80 px-1 rounded">&lt;Route&gt;</code> у <code class="font-mono text-xs bg-white/80 px-1 rounded">App.jsx</code> поруч із <code class="font-mono text-xs bg-white/80 px-1 rounded">/users</code>.
+              </p>
+            </div>
+
+            <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 text-xs sm:text-sm text-emerald-950">
+              <span class="font-bold">👁️ Очікуваний візуальний результат:</span> окрема сторінка <code class="font-mono text-xs">/users/task5</code> із заголовком <em>«Оновлення віку (зі збереженням у localStorage)»</em>, де зміни віку зберігаються між переходами по меню та перезавантаженнями вкладки.
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- БЛОК 4: ДОДАТКОВІ ЗАВДАННЯ (НА ОСНОВІ HOMEWORK) -->
+    <!-- ========================================================= -->
+    <section id="section-extra" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-600 text-white font-bold text-sm">4</span>
+        <h2 class="text-2xl font-bold text-slate-900">Додаткові завдання</h2>
+      </div>
+      <p class="text-slate-600 mb-6">
+        Розширте свій застосунок двома додатковими сторінками для роботи з користувачами та персистентним пошуком за ім'ям.
+      </p>
+
+      <div class="space-y-8">
+
+        <!-- ДОДАТКОВЕ ЗАВДАННЯ 1 -->
+        <article class="bg-white border border-purple-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-purple-100 bg-purple-50/30 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                  Додаткове • Середній
+                </span>
+                <span class="font-mono text-xs text-slate-500">UserList.jsx</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900">Додаткове завдання 1: Сторінка списку користувачів на окремому маршруті</h3>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-5">
+            <div class="bg-purple-50/70 border-l-4 border-purple-500 p-4 rounded-r-lg">
+              <h4 class="font-bold text-purple-950 text-sm mb-1">Чому це важливо в React і як це працює</h4>
+              <p class="text-slate-700 text-sm leading-relaxed">
+                У великих React-проєктах компоненти сторінок часто називаються однаково всередині своїх модулів (наприклад, <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">UserList</code>). Завдяки <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">export default</code> при імпорті в <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">App.jsx</code> ми можемо дати компоненту унікальне ім'я (<code class="font-mono text-xs bg-white px-1 py-0.5 rounded">HomeworkUserList</code>), уникаючи колізій імен.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm mb-2">Покрокове виконання:</h4>
+              <ol class="list-decimal list-inside space-y-2 text-slate-700 text-sm leading-relaxed">
+                <li>Створіть файл <code class="font-mono text-purple-700">UserList.jsx</code> із компонентом <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">UserList</code>, який виводить масив користувачів (Олег, Анна, Іван) у блоці <code class="font-mono text-xs">&lt;div className="user-list-container"&gt;</code> із заголовком <code class="font-mono text-xs">&lt;h2&gt;Список користувачів&lt;/h2&gt;</code>.</li>
+                <li>У <code class="font-mono text-indigo-600">App.jsx</code> імпортуйте компонент як <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">HomeworkUserList</code>.</li>
+                <li>Додайте у навігаційне меню <code class="font-mono text-xs">&lt;NavLink to="/homework/users"&gt;ДЗ: Користувачі&lt;/NavLink&gt;</code> та відповідний маршрут <code class="font-mono text-xs">&lt;Route path="/homework/users" element={&lt;HomeworkUserList /&gt;} /&gt;</code>.</li>
+              </ol>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Обов'язкові імена файлів, компонентів та маршрутів</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-700">
+                <div>• Файл: <span class="text-purple-700 font-semibold">UserList.jsx</span></div>
+                <div>• Імпорт у App.jsx: <span class="text-purple-700 font-semibold">HomeworkUserList</span></div>
+                <div>• Маршрут: <span class="text-purple-700 font-semibold">path="/homework/users"</span></div>
+                <div>• Текст посилання: <span class="text-purple-700 font-semibold">ДЗ: Користувачі</span></div>
+              </div>
+            </div>
+
+            <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 text-xs sm:text-sm text-emerald-950">
+              <span class="font-bold">👁️ Очікуваний візуальний результат:</span> при виборі пункту <em>«ДЗ: Користувачі»</em> відкривається маршрут <code class="font-mono text-xs">/homework/users</code> із оформленим списком усіх трьох користувачів.
+            </div>
+          </div>
+        </article>
+
+        <!-- ДОДАТКОВЕ ЗАВДАННЯ 2 -->
+        <article class="bg-white border border-purple-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-purple-100 bg-purple-50/30 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-200">
+                  Додаткове • Складний
+                </span>
+                <span class="font-mono text-xs text-slate-500">UserFilter.jsx</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900">Додаткове завдання 2: Сторінка фільтрації за ім'ям зі збереженням та скиданням</h3>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-5">
+            <div class="bg-purple-50/70 border-l-4 border-purple-500 p-4 rounded-r-lg">
+              <h4 class="font-bold text-purple-950 text-sm mb-1">Чому це важливо в React і як це працює</h4>
+              <p class="text-slate-700 text-sm leading-relaxed">
+                Замість збереження вже обрізаного масиву в <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">localStorage</code> правильніше зберігати <strong>сам критерій пошуку</strong> (<code class="font-mono text-xs bg-white px-1 py-0.5 rounded">filter</code>), а список <code class="font-mono text-xs bg-white px-1 py-0.5 rounded">filteredUsers</code> обчислювати на льоту під час рендеру. Тоді після перезавантаження сторінки користувач бачить і введений запит у полі пошуку, і відповідний результат.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm mb-2">Покрокове виконання:</h4>
+              <ol class="list-decimal list-inside space-y-2 text-slate-700 text-sm leading-relaxed">
+                <li>Створіть файл <code class="font-mono text-purple-700">UserFilter.jsx</code> із масивом <code class="font-mono text-xs">initialUsers</code> та ключем <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">STORAGE_KEY = 'homework_nameFilter'</code>.</li>
+                <li>У компоненті <code class="font-mono text-indigo-600">UserFilter</code> ініціалізуйте стан <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">filter</code> значенням із <code class="font-mono text-xs">localStorage.getItem(STORAGE_KEY) || ''</code>.</li>
+                <li>Додайте <code class="font-mono text-xs">useEffect</code> із залежністю <code class="font-mono text-xs">[filter]</code>, який зберігає поточний рядок пошуку в <code class="font-mono text-xs">localStorage</code>.</li>
+                <li>Обчисліть <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">filteredUsers</code> через <code class="font-mono text-xs">.filter()</code> без урахування регістру та початкових/кінцевих пробілів (<code class="font-mono text-xs">.trim().toLowerCase()</code>).</li>
+                <li>Створіть функцію <code class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">handleReset</code>, яка очищає стан <code class="font-mono text-xs">setFilter('')</code> та видаляє ключ через <code class="font-mono text-xs">localStorage.removeItem(STORAGE_KEY)</code>.</li>
+                <li>Оформіть контейнер як <code class="font-mono text-xs">&lt;div className="user-list-container user-filter"&gt;</code>, додайте текстовий інпут (<code class="font-mono text-xs">placeholder="Пошук за ім'ям"</code>), кнопку <em>«Скинути фільтр»</em> та виведіть список або повідомлення <code class="font-mono text-xs">&lt;p className="empty-message"&gt;Користувачів з ім'ям «{filter}» не знайдено&lt;/p&gt;</code>.</li>
+                <li>Імпортуйте компонент у <code class="font-mono text-xs">App.jsx</code> як <code class="font-mono text-xs">HomeworkUserFilter</code> та зареєструйте маршрут <code class="font-mono text-xs">/homework/users/filter</code>.</li>
+              </ol>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Обов'язкові імена файлів, компонентів та ключів</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-700">
+                <div>• Файл: <span class="text-purple-700 font-semibold">UserFilter.jsx</span></div>
+                <div>• Імпорт у App.jsx: <span class="text-purple-700 font-semibold">HomeworkUserFilter</span></div>
+                <div>• Ключ сховища: <span class="text-purple-700 font-semibold">'homework_nameFilter'</span></div>
+                <div>• Маршрут: <span class="text-purple-700 font-semibold">path="/homework/users/filter"</span></div>
+              </div>
+            </div>
+
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 text-xs sm:text-sm text-amber-950">
+              <p class="font-bold mb-1">💡 Підказка:</p>
+              <p class="text-amber-900">
+                Додавання класу <code class="font-mono text-xs bg-white/80 px-1 rounded">user-filter</code> до зовнішнього <code class="font-mono text-xs bg-white/80 px-1 rounded">&lt;div&gt;</code> автоматично стилізує кнопку скидання в червоний колір завдяки правилу <code class="font-mono text-xs bg-white/80 px-1 rounded">.user-filter button</code> у <code class="font-mono text-xs bg-white/80 px-1 rounded">App.css</code>.
+              </p>
+            </div>
+
+            <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 text-xs sm:text-sm text-emerald-950">
+              <span class="font-bold">👁️ Очікуваний візуальний результат:</span> сторінка за маршрутом <code class="font-mono text-xs">/homework/users/filter</code>, де введений запит і відфільтрований список зберігаються після перезавантаження вкладки, а червона кнопка <em>«Скинути фільтр»</em> очищає пошук і повертає всіх користувачів.
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Підвал -->
+  <footer class="bg-white border-t border-slate-200 mt-16 py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div>Урок 19 • Робота з масивами об'єктів у React, localStorage та React Router</div>
+    </div>
+  </footer>
+
+  <script>
+    function copyCode(elementId, button) {
+      const target = document.getElementById(elementId);
+      if (!target) return;
+      navigator.clipboard.writeText(target.innerText).then(() => {
+        const prev = button.innerHTML;
+        button.innerHTML = '<span>✓ Скопійовано</span>';
+        button.classList.add('border-emerald-500', 'text-emerald-400');
+        setTimeout(() => {
+          button.innerHTML = prev;
+          button.classList.remove('border-emerald-500', 'text-emerald-400');
+        }, 1800);
+      });
+    }
+
+    function toggleAllDetails(openState) {
+      document.querySelectorAll('.data-details').forEach((el) => {
+        el.open = openState;
+      });
+    }
+  </script>
+</body>
+</html>
